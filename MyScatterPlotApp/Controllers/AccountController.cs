@@ -1,25 +1,31 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using MyScatterPlotApp.Models;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 
-namespace MyScatterPlotApp.Models
+namespace MyScatterPlotApp.Controllers
 {
     public class AccountController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
 
-        public AccountController(UserManager<ApplicationUser> userManager,
-                                 SignInManager<ApplicationUser> signInManager)
+        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
         }
 
+        // GET: Account/Register
         [HttpGet]
-        public IActionResult Register() => View();
+        public IActionResult Register()
+        {
+            return View();
+        }
 
+        // POST: Account/Register
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
             if (ModelState.IsValid)
@@ -29,7 +35,7 @@ namespace MyScatterPlotApp.Models
                 if (result.Succeeded)
                 {
                     await _signInManager.SignInAsync(user, isPersistent: false);
-                    return RedirectToAction("Index", "Chart");
+                    return RedirectToAction("Index", "Home");
                 }
                 foreach (var error in result.Errors)
                 {
@@ -39,35 +45,37 @@ namespace MyScatterPlotApp.Models
             return View(model);
         }
 
+        // GET: Account/Login
         [HttpGet]
-        public IActionResult Login() => View();
+        public IActionResult Login()
+        {
+            return View();
+        }
 
+        // POST: Account/Login
         [HttpPost]
-        public async Task<IActionResult> Login(LoginViewModel model, string returnUrl = null)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Login(LoginViewModel model)
         {
             if (ModelState.IsValid)
             {
-                var result = await _signInManager.PasswordSignInAsync(model.Email,
-                                                                      model.Password,
-                                                                      model.RememberMe,
-                                                                      lockoutOnFailure: false);
+                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
-                    if (string.IsNullOrEmpty(returnUrl))
-                        return RedirectToAction("Index", "Chart");
-                    else
-                        return LocalRedirect(returnUrl);
+                    return RedirectToAction("Index", "Home");
                 }
-                ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                ModelState.AddModelError(string.Empty, "Неверный ввод данных.");
             }
             return View(model);
         }
 
+        // POST: Account/Logout
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
-            return RedirectToAction("Login", "Account");
+            return RedirectToAction("Index", "Home");
         }
     }
 }
