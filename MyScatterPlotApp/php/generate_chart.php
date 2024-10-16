@@ -3,7 +3,7 @@ header('Content-Type: application/json');
 
 $servername = "localhost";
 $username = "root";
-$password = "yourpassword";
+$password = "";
 $dbname = "scatterplot_db";
 
 // Создание соединения

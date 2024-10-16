@@ -30,6 +30,7 @@ public class Startup
         services.AddControllersWithViews();
     }
 
+
     // Этот метод вызывается рантаймом. Используйте его для настройки HTTP-пайплайна.
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {

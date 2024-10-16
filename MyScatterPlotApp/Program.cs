@@ -8,7 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 // ƒобавление сервисов в контейнер.
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
-        new MySqlServerVersion(new Version(8, 0, 21)))); // ”бедитесь, что верси€ соответствует вашей MySQL
+        new MySqlServerVersion(new Version(10, 4, 32)))); // ”бедитесь, что верси€ соответствует вашей MySQL
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
