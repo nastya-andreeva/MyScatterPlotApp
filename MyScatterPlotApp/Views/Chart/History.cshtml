@@ -1,0 +1,38 @@
+﻿@model List<ChartData>
+
+@{
+    ViewData["Title"] = "История диаграмм";
+}
+
+<h2>История диаграмм</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Диаграмма</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var chart in Model)
+        {
+            <tr>
+                <td>@chart.Id</td>
+                <td>
+                    @if (!string.IsNullOrEmpty(chart.ChartImagePath))
+                    {
+                        <img src="@chart.ChartImagePath" alt="Chart @chart.Id" width="400" />
+                    }
+                    else
+                    {
+                        <span>Диаграмма не сгенерирована</span>
+                    }
+                </td>
+                <td>
+                    <!-- Добавьте действия, такие как удаление -->
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

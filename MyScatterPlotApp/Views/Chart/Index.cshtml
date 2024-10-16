@@ -1,0 +1,23 @@
+﻿@{
+    ViewData["Title"] = "Создание точечной диаграммы";
+}
+
+<h2>Создание точечной диаграммы</h2>
+<form id="dataForm" method="post" asp-action="SaveData">
+    <div>
+        <label for="xValues">Введите значения X (через запятую):</label>
+        <input type="text" id="xValues" name="xValues" required />
+    </div>
+    <div>
+        <label for="yValues">Введите значения Y (через запятую):</label>
+        <input type="text" id="yValues" name="yValues" required />
+    </div>
+    <button type="submit">Сгенерировать диаграмму</button>
+</form>
+
+<canvas id="myChart" width="800" height="600"></canvas>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="~/js/script.js"></script>
+}
