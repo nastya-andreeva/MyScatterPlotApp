@@ -1,31 +1,32 @@
 ﻿@model MyScatterPlotApp.Models.RegisterViewModel
 
-<h2>Регистрация</h2>
+<h3>Регистрация</h3>
 
 <form asp-action="Register" method="post">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-    <div class="form-group">
-        <label asp-for="Email"></label>
+    <div class="form-group" style="margin-block-end: 10px">
+        <label asp-for="Email">Email: </label>
         <input asp-for="Email" class="form-control" />
         <span asp-validation-for="Email" class="text-danger"></span>
     </div>
 
-    <div class="form-group">
-        <label asp-for="Password"></label>
+    <div class="form-group" style="margin-block-end: 10px">
+        <label asp-for="Password">Пароль: </label>
         <input asp-for="Password" class="form-control" />
         <span asp-validation-for="Password" class="text-danger"></span>
     </div>
 
-    <div class="form-group">
-        <label asp-for="ConfirmPassword"></label>
+    <div class="form-group" style="margin-block-end: 10px">
+        <label asp-for="ConfirmPassword">Подтверждение пароля: </label>
         <input asp-for="ConfirmPassword" class="form-control" />
         <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
     </div>
 
     <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+    <div style="margin-block-end: 10px"></div>
 </form>
 
-<div>
+<div >
     <a asp-action="Login">Уже есть аккаунт? Войти</a>
 </div>
