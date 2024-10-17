@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using OfficeOpenXml;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 [Authorize]
@@ -41,6 +41,7 @@ public class ChartController : Controller
 
         if (fileExtension == ".csv")
         {
+            // Обработка CSV
             using (var reader = new StreamReader(filePath))
             {
                 while (!reader.EndOfStream)
@@ -58,6 +59,7 @@ public class ChartController : Controller
         }
         else if (fileExtension == ".xlsx" || fileExtension == ".xls")
         {
+            // Обработка Excel
             using (var package = new ExcelPackage(new FileInfo(filePath)))
             {
                 var worksheet = package.Workbook.Worksheets[0];
@@ -73,12 +75,42 @@ public class ChartController : Controller
                 }
             }
         }
+        else if (fileExtension == ".json")
+        {
+            // Обработка JSON
+            using (var reader = new StreamReader(filePath))
+            {
+                var jsonString = await reader.ReadToEndAsync();
+                try
+                {
+                    var jsonData = JsonSerializer.Deserialize<List<JsonData>>(jsonString);
+
+                    if (jsonData != null)
+                    {
+                        foreach (var data in jsonData)
+                        {
+                            xValues.Add(data.x);
+                            yValues.Add(data.y);
+                        }
+                    }
+                }
+                catch (JsonException)
+                {
+                    return Json(new { status = "error", message = "Неверный формат JSON." });
+                }
+            }
+        }
         else
         {
             return Json(new { status = "error", message = "Неподдерживаемый формат файла." });
         }
 
-        // Возвращаем JSON с данными для диаграммы
         return Json(new { status = "success", xValues = xValues, yValues = yValues });
+    }
+
+    public class JsonData
+    {
+        public float x { get; set; }
+        public float y { get; set; }
     }
 }
