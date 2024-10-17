@@ -1,23 +1,84 @@
 ﻿@{
-    ViewData["Title"] = "Создание точечной диаграммы";
+    ViewData["Title"] = "Генерация диаграммы";
 }
 
-<h2>Создание точечной диаграммы</h2>
-<form id="dataForm" method="post" asp-action="SaveData">
-    <div>
-        <label for="xValues">Введите значения X (через запятую):</label>
-        <input type="text" id="xValues" name="xValues" required />
-    </div>
-    <div>
-        <label for="yValues">Введите значения Y (через запятую):</label>
-        <input type="text" id="yValues" name="yValues" required />
-    </div>
+<h2>Генерация диаграммы</h2>
+
+<form id="dataForm" method="post" enctype="multipart/form-data">
+    <label for="fileInput">Выберите файл (CSV или Excel):</label>
+    <input type="file" id="fileInput" name="file" accept=".csv, .xlsx, .xls" required>
     <button type="submit">Сгенерировать диаграмму</button>
 </form>
 
-<canvas id="myChart" width="800" height="600"></canvas>
+<canvas id="chartCanvas" style="display:none;"></canvas>
 
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="~/js/script.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $("#dataForm").on("submit", function (e) {
+            e.preventDefault();
+
+            const fileInput = document.getElementById("fileInput");
+            const file = fileInput.files[0];
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            fetch("/Chart/Upload", {
+                method: "POST",
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "success") {
+                        // Показать сообщение об успешной генерации
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Диаграмма сгенерирована!',
+                            text: 'Данные успешно обработаны.',
+                            showConfirmButton: true
+                        });
+
+                        // Полученные данные для диаграммы
+                        const xValues = data.xValues;
+                        const yValues = data.yValues;
+
+                        // Отображение диаграммы с использованием Chart.js
+                        const ctx = document.getElementById('chartCanvas').getContext('2d');
+                        document.getElementById('chartCanvas').style.display = 'block';
+
+                        new Chart(ctx, {
+                            type: 'scatter',
+                            data: {
+                                datasets: [{
+                                    label: 'Scatter Dataset',
+                                    data: xValues.map((x, index) => ({ x, y: yValues[index] })),
+                                    backgroundColor: 'rgba(75, 192, 192, 1)'
+                                }]
+                            },
+                            options: {
+                                scales: {
+                                    x: {
+                                        type: 'linear',
+                                        position: 'bottom'
+                                    }
+                                }
+                            }
+                        });
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Ошибка',
+                        text: 'Произошла ошибка при загрузке файла.'
+                    });
+                });
+        });
+    </script>
 }

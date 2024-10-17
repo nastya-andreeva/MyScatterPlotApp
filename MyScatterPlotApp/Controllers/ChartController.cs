@@ -1,76 +1,84 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
-using System.Threading.Tasks;
+using OfficeOpenXml;
 using System.Collections.Generic;
-using System.Net.Http;
-using Newtonsoft.Json;
-using MyScatterPlotApp.Data;
-using MyScatterPlotApp.Models;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 [Authorize]
 public class ChartController : Controller
 {
-    private readonly ApplicationDbContext _context;
-    private readonly IHttpClientFactory _httpClientFactory;
-
-    public ChartController(ApplicationDbContext context, IHttpClientFactory httpClientFactory)
-    {
-        _context = context;
-        _httpClientFactory = httpClientFactory;
-    }
-
     [HttpGet]
     public IActionResult Index() => View();
 
     [HttpPost]
-    public async Task<IActionResult> SaveData(string xValues, string yValues)
+    public async Task<IActionResult> Upload(IFormFile file)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var chartData = new ChartData
+        if (file == null || file.Length == 0)
         {
-            XValues = xValues,
-            YValues = yValues,
-            UserId = userId
-        };
-        _context.ChartDatas.Add(chartData);
-        await _context.SaveChangesAsync();
-
-        // Вызов PHP скрипта для генерации диаграммы
-        var client = _httpClientFactory.CreateClient();
-        var phpUrl = "http://localhost/php/generate_chart.php"; // Убедитесь, что путь правильный
-
-        var payload = new
-        {
-            chartId = chartData.Id,
-            xValues = xValues,
-            yValues = yValues
-        };
-        var content = new StringContent(JsonConvert.SerializeObject(payload), System.Text.Encoding.UTF8, "application/json");
-        var response = await client.PostAsync(phpUrl, content);
-
-        if (response.IsSuccessStatusCode)
-        {
-            var responseContent = await response.Content.ReadAsStringAsync();
-            var result = JsonConvert.DeserializeObject<Dictionary<string, string>>(responseContent);
-            if (result.ContainsKey("status") && result["status"] == "success")
-            {
-                chartData.ChartImagePath = result["imagePath"];
-                await _context.SaveChangesAsync();
-            }
+            return Json(new { status = "error", message = "Файл не был загружен." });
         }
 
-        return RedirectToAction("History");
-    }
+        string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "uploads");
+        string filePath = Path.Combine(uploadsFolder, file.FileName);
 
-    [HttpGet]
-    public async Task<IActionResult> History()
-    {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var charts = await _context.ChartDatas
-                                   .Where(c => c.UserId == userId)
-                                   .ToListAsync();
-        return View(charts);
+        if (!Directory.Exists(uploadsFolder))
+        {
+            Directory.CreateDirectory(uploadsFolder);
+        }
+
+        using (var fileStream = new FileStream(filePath, FileMode.Create))
+        {
+            await file.CopyToAsync(fileStream);
+        }
+
+        List<float> xValues = new List<float>();
+        List<float> yValues = new List<float>();
+
+        var fileExtension = Path.GetExtension(file.FileName).ToLower();
+
+        if (fileExtension == ".csv")
+        {
+            using (var reader = new StreamReader(filePath))
+            {
+                while (!reader.EndOfStream)
+                {
+                    var line = await reader.ReadLineAsync();
+                    var values = line.Split(',');
+
+                    if (values.Length >= 2 && float.TryParse(values[0], out float x) && float.TryParse(values[1], out float y))
+                    {
+                        xValues.Add(x);
+                        yValues.Add(y);
+                    }
+                }
+            }
+        }
+        else if (fileExtension == ".xlsx" || fileExtension == ".xls")
+        {
+            using (var package = new ExcelPackage(new FileInfo(filePath)))
+            {
+                var worksheet = package.Workbook.Worksheets[0];
+                var rowCount = worksheet.Dimension.Rows;
+
+                for (int row = 1; row <= rowCount; row++)
+                {
+                    if (float.TryParse(worksheet.Cells[row, 1].Text, out float x) && float.TryParse(worksheet.Cells[row, 2].Text, out float y))
+                    {
+                        xValues.Add(x);
+                        yValues.Add(y);
+                    }
+                }
+            }
+        }
+        else
+        {
+            return Json(new { status = "error", message = "Неподдерживаемый формат файла." });
+        }
+
+        // Возвращаем JSON с данными для диаграммы
+        return Json(new { status = "success", xValues = xValues, yValues = yValues });
     }
 }
