@@ -5,6 +5,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - MyScatterPlotApp</title>
     <link rel="stylesheet" href="~/css/site.css" />
+    <style>
+        /* Стили для шапки и навигации */
+        body {
+            margin: 0; /* Убираем отступы для body */
+        }
+
+        header {
+            background-color: #333; /* Черный фон */
+            height: 40px; /* Уменьшенная высота шапки */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* Добавляем тень для визуального отделения */
+            display: flex; /* Используем flexbox для вертикального центрирования */
+            align-items: center; /* Центрируем элементы по вертикали */
+            justify-content: center; /* Центрируем элементы по горизонтали */
+        }
+
+        nav ul {
+            list-style: none; /* Убираем маркеры списка */
+            margin: 0; /* Убираем отступы */
+            padding: 0; /* Убираем отступы */
+            display: flex; /* Используем flexbox для горизонтального выравнивания */
+            align-items: center; /* Выравниваем элементы по вертикали */
+        }
+
+            nav ul li {
+                margin: 0 20px; /* Отступы между пунктами меню */
+            }
+
+                nav ul li a, nav ul li button {
+                    color: #fff; /* Белый цвет текста */
+                    text-decoration: none; /* Убираем подчеркивание ссылок */
+                    font-size: 16px;
+                    line-height: 40px; /* Центрируем текст по вертикали, равным высоте шапки */
+                    display: flex; /* Используем flexbox для выравнивания */
+                    align-items: center; /* Центрируем текст по вертикали */
+                }
+
+                nav ul li button {
+                    background: none; /* Убираем фон у кнопок */
+                    border: none; /* Убираем границу у кнопок */
+                    cursor: pointer;
+                    text-decoration: underline; /* Подчеркивание для кнопки "Выйти" */
+                }
+
+                    nav ul li a:hover, nav ul li button:hover {
+                        text-decoration: underline; /* Подчеркивание при наведении */
+                    }
+    </style>
 </head>
 <body>
     <header>
@@ -15,7 +62,7 @@
                     <li><a asp-controller="Chart" asp-action="Index">Создать диаграмму</a></li>
                     <li><a asp-controller="Chart" asp-action="History">История</a></li>
                     <li>
-                        <form asp-controller="Account" asp-action="Logout" method="post">
+                        <form asp-controller="Account" asp-action="Logout" method="post" style="display:inline;">
                             <button type="submit">Выйти</button>
                         </form>
                     </li>
