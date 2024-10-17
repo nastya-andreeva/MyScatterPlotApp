@@ -59,6 +59,7 @@
             <ul>
                 @if (User.Identity.IsAuthenticated)
                 {
+                    <li><a asp-controller="Home" asp-action="Index">Главная</a></li>
                     <li><a asp-controller="Chart" asp-action="Index">Создать диаграмму</a></li>
                     <li><a asp-controller="Chart" asp-action="History">История</a></li>
                     <li>
