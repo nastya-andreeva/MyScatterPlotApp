@@ -4,13 +4,24 @@
 
 <h2>Генерация диаграммы</h2>
 
-<form id="dataForm" method="post" enctype="multipart/form-data">
-    <label for="fileInput">Выберите файл (CSV, JSON или Excel):</label>
-    <input type="file" id="fileInput" name="file" accept=".csv, .xlsx, .xls, .json" required>
-    <button type="submit">Сгенерировать диаграмму</button>
+<form id="dataForm" method="post">
+    <div>
+        <label for="titleInput">Введите заголовок диаграммы:</label><br />
+        <input type="text" id="titleInput" name="title" required><br /><br />
+    </div>
+
+    <div>
+        <label for="fileInput">Выберите файл (CSV, Excel или JSON):</label><br />
+        <input type="file" id="fileInput" accept=".csv, .xlsx, .xls, .json" required><br /><br />
+    </div>
+
+    <div>
+        <button type="submit">Сгенерировать диаграмму</button>
+    </div>
 </form>
 
-<canvas id="chartCanvas" style="display:none;"></canvas>
+<canvas id="chartCanvas" style="display:none; width: 400px; height: 400px;"></canvas>
+<img id="chartImage" style="display:none;" alt="Сгенерированная диаграмма">
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -22,6 +33,7 @@
 
             const fileInput = document.getElementById("fileInput");
             const file = fileInput.files[0];
+            const titleInput = document.getElementById("titleInput").value;
 
             const formData = new FormData();
             formData.append("file", file);
@@ -53,7 +65,7 @@
                             type: 'scatter',
                             data: {
                                 datasets: [{
-                                    label: 'Scatter Dataset',
+                                    label: titleInput,
                                     data: xValues.map((x, index) => ({ x, y: yValues[index] })),
                                     backgroundColor: 'rgba(75, 192, 192, 1)'
                                 }]

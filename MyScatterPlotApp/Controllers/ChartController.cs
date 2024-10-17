@@ -14,7 +14,7 @@ public class ChartController : Controller
     public IActionResult Index() => View();
 
     [HttpPost]
-    public async Task<IActionResult> Upload(IFormFile file)
+    public async Task<IActionResult> Upload(IFormFile file, string title)
     {
         if (file == null || file.Length == 0)
         {
@@ -41,7 +41,6 @@ public class ChartController : Controller
 
         if (fileExtension == ".csv")
         {
-            // Обработка CSV
             using (var reader = new StreamReader(filePath))
             {
                 while (!reader.EndOfStream)
@@ -59,7 +58,6 @@ public class ChartController : Controller
         }
         else if (fileExtension == ".xlsx" || fileExtension == ".xls")
         {
-            // Обработка Excel
             using (var package = new ExcelPackage(new FileInfo(filePath)))
             {
                 var worksheet = package.Workbook.Worksheets[0];
@@ -77,7 +75,6 @@ public class ChartController : Controller
         }
         else if (fileExtension == ".json")
         {
-            // Обработка JSON
             using (var reader = new StreamReader(filePath))
             {
                 var jsonString = await reader.ReadToEndAsync();
