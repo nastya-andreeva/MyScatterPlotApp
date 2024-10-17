@@ -1,15 +1,24 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Claims;
 using System.Text.Json;
 using System.Threading.Tasks;
 
 [Authorize]
 public class ChartController : Controller
 {
+    //private readonly ApplicationDbContext _context;
+
+    //public ChartController(ApplicationDbContext context)
+    //{
+    //    _context = context;
+    //}
+
     [HttpGet]
     public IActionResult Index() => View();
 
@@ -109,5 +118,17 @@ public class ChartController : Controller
     {
         public float x { get; set; }
         public float y { get; set; }
+    }
+
+    [HttpGet]
+    public IActionResult History()
+    {
+        // Комментарий: Временно убрано получение данных из БД
+        // var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        // var charts = await _context.ChartDatas.Where(c => c.UserId == userId).ToListAsync();
+        // return View(charts);
+
+        // Возвращаем пустую историю
+        return View(new List<ChartData>());
     }
 }
