@@ -10,7 +10,7 @@
     <thead>
         <tr>
             <th>ID</th>
-            <th>Диаграмма</th>
+            <th>Файл данных</th>
             <th>Действия</th>
         </tr>
     </thead>
@@ -20,19 +20,64 @@
             <tr>
                 <td>@chart.Id</td>
                 <td>
-                    @if (!string.IsNullOrEmpty(chart.ChartImagePath))
+                    @if (!string.IsNullOrEmpty(chart.ChartImagePath)) // Проверка наличия пути к файлу
                     {
-                        <img src="@chart.ChartImagePath" alt="Chart @chart.Id" width="400" />
+                        <a href="@Url.Content(chart.ChartImagePath)" download>Скачать файл JSON</a>
                     }
                     else
                     {
-                        <span>Диаграмма не сгенерирована</span>
+                        <span>Файл не прикреплен</span>
                     }
                 </td>
                 <td>
-                    <!-- Добавьте действия, такие как удаление -->
+                    <button onclick="viewImage('@chart.ChartImagePath')">Посмотреть изображение</button>
+                    <button onclick="deleteChart(@chart.Id)">Удалить</button>
                 </td>
             </tr>
         }
     </tbody>
 </table>
+
+<!-- Модальное окно для просмотра изображения -->
+<div id="imageModal" style="display:none;">
+    <span onclick="document.getElementById('imageModal').style.display='none'" style="cursor:pointer; position:absolute; top:10px; right:20px;">&times;</span>
+    <img id="modalImage" src="" style="max-width: 90%; max-height: 90%; margin: auto; display: block;" />
+</div>
+
+@section Scripts {
+    <script>
+        function deleteChart(chartId) {
+            if (confirm('Вы уверены, что хотите удалить эту диаграмму?')) {
+                fetch("/Chart/Delete", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest' // Это нужно для ASP.NET Core
+                    },
+                    body: JSON.stringify({ id: chartId })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === "success") {
+                            alert(data.message);
+                            location.reload(); // Обновление страницы после удаления
+                        } else {
+                            alert(data.message);
+                        }
+                    })
+                    .catch(error => {
+                        alert('Ошибка при удалении диаграммы: ' + error);
+                    });
+            }
+        }
+
+
+
+        function viewImage(imagePath) {
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            modalImage.src = imagePath;
+            modal.style.display = 'block';
+        }
+    </script>
+}

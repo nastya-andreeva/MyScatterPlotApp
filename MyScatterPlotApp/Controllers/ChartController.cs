@@ -143,14 +143,61 @@ public class ChartController : Controller
     }
 
     [HttpGet]
-    public IActionResult History()
+    public async Task<IActionResult> History()
     {
-        // Комментарий: Временно убрано получение данных из БД
-        // var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        // var charts = await _context.ChartDatas.Where(c => c.UserId == userId).ToListAsync();
-        // return View(charts);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var charts = await _context.ChartDatas
+            .Where(c => c.UserId == userId)
+            .ToListAsync();
+        foreach (var chart in charts)
+        {
+            // Создаем JSON-данные на основе XValues и YValues
+            var data = new List<JsonData>();
 
-        // Возвращаем пустую историю
-        return View(new List<ChartData>());
+            // Десериализуем XValues и YValues
+            var xValues = JsonSerializer.Deserialize<List<float>>(chart.XValues);
+            var yValues = JsonSerializer.Deserialize<List<float>>(chart.YValues);
+
+            for (int i = 0; i < xValues.Count; i++)
+            {
+                data.Add(new JsonData { x = xValues[i], y = yValues[i] });
+            }
+
+            // Генерируем путь к JSON-файлу
+            string jsonFileName = $"chart_data_{chart.Id}.json";
+            string jsonFilePath = Path.Combine(Directory.GetCurrentDirectory(), "uploads", jsonFileName);
+
+            // Записываем данные в JSON-файл
+            await System.IO.File.WriteAllTextAsync(jsonFilePath, JsonSerializer.Serialize(data));
+
+            // Сохраняем путь к JSON-файлу в объекте ChartData для отображения
+            chart.ChartImagePath = $"/uploads/{jsonFileName}";
+        }
+
+        return View(charts);
     }
+
+    public class DeleteRequest
+    {
+        public int Id { get; set; }
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Delete([FromBody] DeleteRequest request)
+    {
+        var chartData = await _context.ChartDatas.FindAsync(request.Id);
+
+        if (chartData == null)
+        {
+            return Json(new { status = "error", message = "Диаграмма не найдена." });
+        }
+
+        _context.ChartDatas.Remove(chartData);
+        await _context.SaveChangesAsync();
+
+        return Json(new { status = "success", message = "Диаграмма удалена." });
+    }
+
+
+
 }
