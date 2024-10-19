@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MyScatterPlotApp.Data;
 using OfficeOpenXml;
 using System.Collections.Generic;
 using System.IO;
@@ -12,12 +13,12 @@ using System.Threading.Tasks;
 [Authorize]
 public class ChartController : Controller
 {
-    //private readonly ApplicationDbContext _context;
+    private readonly ApplicationDbContext _context;
 
-    //public ChartController(ApplicationDbContext context)
-    //{
-    //    _context = context;
-    //}
+    public ChartController(ApplicationDbContext context)
+    {
+        _context = context;
+    }
 
     [HttpGet]
     public IActionResult Index() => View();
@@ -110,6 +111,27 @@ public class ChartController : Controller
         {
             return Json(new { status = "error", message = "Неподдерживаемый формат файла." });
         }
+
+        // Теперь добавим логику сохранения данных в базу
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); // Получаем ID пользователя
+
+        // Генерация пути к изображению (можно использовать реальный путь к картинке, если генерируется изображение)
+        string chartImagePath = Path.Combine("/images/charts", $"{Path.GetFileNameWithoutExtension(file.FileName)}.png");
+
+        // Создаем новый объект ChartData для сохранения в базу данных
+        var chartData = new ChartData
+        {
+            UserId = userId,
+            XValues = JsonSerializer.Serialize(xValues), // Сохраняем X и Y как JSON
+            YValues = JsonSerializer.Serialize(yValues),
+            ChartImagePath = chartImagePath,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        // Сохраняем в БД
+        _context.ChartDatas.Add(chartData);
+        await _context.SaveChangesAsync();
 
         return Json(new { status = "success", xValues = xValues, yValues = yValues });
     }

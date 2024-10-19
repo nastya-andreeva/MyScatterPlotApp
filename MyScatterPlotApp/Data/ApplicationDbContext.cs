@@ -16,7 +16,13 @@ namespace MyScatterPlotApp.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            // Дополнительные настройки моделей
+
+            // Явно указываем внешний ключ для ApplicationUser
+            modelBuilder.Entity<ChartData>()
+                .HasOne(c => c.ApplicationUser)
+                .WithMany()
+                .HasForeignKey(c => c.UserId)
+                .HasConstraintName("FK_ChartData_ApplicationUser_UserId");
         }
     }
 }
