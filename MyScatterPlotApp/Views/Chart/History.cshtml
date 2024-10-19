@@ -30,7 +30,7 @@
                     }
                 </td>
                 <td>
-                    <button onclick="viewImage('@chart.ChartImagePath')">Посмотреть изображение</button>
+                    <button onclick="showChart(@chart.Id, '@chart.XValues', '@chart.YValues')">Посмотреть изображение</button>
                     <button onclick="deleteChart(@chart.Id)">Удалить</button>
                 </td>
             </tr>
@@ -38,13 +38,12 @@
     </tbody>
 </table>
 
-<!-- Модальное окно для просмотра изображения -->
-<div id="imageModal" style="display:none;">
-    <span onclick="document.getElementById('imageModal').style.display='none'" style="cursor:pointer; position:absolute; top:10px; right:20px;">&times;</span>
-    <img id="modalImage" src="" style="max-width: 90%; max-height: 90%; margin: auto; display: block;" />
-</div>
+<canvas id="chartCanvas" style="display: none; width: 400px; height: 400px;"></canvas>
+
+
 
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         function deleteChart(chartId) {
             if (confirm('Вы уверены, что хотите удалить эту диаграмму?')) {
@@ -71,13 +70,39 @@
             }
         }
 
+        function showChart(chartId, xValuesString, yValuesString) {
+
+            // Отображение диаграммы с использованием Chart.js
+            const ctx = document.getElementById('chartCanvas').getContext('2d');
+
+            document.getElementById('chartCanvas').style.display = 'inline-block';
 
 
-        function viewImage(imagePath) {
-            const modal = document.getElementById('imageModal');
-            const modalImage = document.getElementById('modalImage');
-            modalImage.src = imagePath;
-            modal.style.display = 'block';
+            // Преобразуем строки в массивы
+            const xValues = JSON.parse(xValuesString);
+            const yValues = JSON.parse(yValuesString);
+
+            new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Диаграмма',
+                        data: xValues.map((x, index) => ({ x, y: yValues[index] })),
+                        backgroundColor: 'rgba(75, 192, 192, 1)'
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
         }
+
+
+
     </script>
 }

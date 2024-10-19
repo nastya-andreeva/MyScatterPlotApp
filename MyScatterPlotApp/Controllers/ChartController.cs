@@ -177,13 +177,13 @@ public class ChartController : Controller
         return View(charts);
     }
 
-    public class DeleteRequest
+    public class Request
     {
         public int Id { get; set; }
     }
 
     [HttpPost]
-    public async Task<IActionResult> Delete([FromBody] DeleteRequest request)
+    public async Task<IActionResult> Delete([FromBody] Request request)
     {
         var chartData = await _context.ChartDatas.FindAsync(request.Id);
 
@@ -197,7 +197,6 @@ public class ChartController : Controller
 
         return Json(new { status = "success", message = "Диаграмма удалена." });
     }
-
 
 
 }
